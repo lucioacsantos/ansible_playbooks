@@ -1,0 +1,28 @@
+---
+- name: Instalar yum-utils, executar yum update e reiniciar se necessário
+  hosts: all
+  become: yes  # Executar como root
+
+  tasks:
+    - name: Instalar o pacote yum-utils
+      yum:
+        name: yum-utils
+        state: present
+
+    - name: Executar yum update para atualizar pacotes
+      yum:
+        name: "*"
+        state: latest
+
+    - name: Verificar se é necessário reiniciar com needs-restarting
+      shell: needs-restarting -r
+      register: restart_needed
+      ignore_errors: yes  # Não interromper o playbook mesmo que falhe
+
+    - name: Exibir resultado do comando needs-restarting
+      debug:
+        var: restart_needed
+
+    - name: Reiniciar o sistema se for necessário
+      reboot:
+      when: restart_needed.rc == 1  # Reiniciar se o código de retorno for 1
