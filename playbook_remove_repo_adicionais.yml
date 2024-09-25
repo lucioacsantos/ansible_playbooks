@@ -1,0 +1,17 @@
+---
+- name: Renomear arquivos em /etc/yum.repos.d/ exceto redhat.repo
+  hosts: all
+  become: yes  # Executar como root
+
+  tasks:
+    - name: Verificar arquivos em /etc/yum.repos.d/ exceto redhat.repo
+      find:
+        paths: /etc/yum.repos.d/
+        recurse: no  # Não pesquisar recursivamente
+        patterns: "*.repo"
+        excludes: "redhat.repo"  # Excluir redhat.repo da busca
+      register: repo_files
+
+    - name: Renomear arquivos com extensão .bk
+      command: mv "{{ item.path }}" "{{ item.path }}.bk"
+      loop: "{{ repo_files.files }}"
